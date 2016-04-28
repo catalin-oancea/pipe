@@ -1,0 +1,1206 @@
+{%verbatim%}
+<html>
+<head>
+    <title>pipe</title>
+
+    <!-- jQuery (needed for bootstrap) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.2/angular.min.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-cookies.js"></script>
+
+    <!-- FontAwesome -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Photo input style -->
+    <style type="text/css">
+        .btn-file {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-file input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+    </style>
+    <!-- Searchbar style -->
+    <style type="text/css">
+
+        .search {
+            position: relative;
+            margin: 0 auto;
+            width: 300px;
+        }
+
+        .results { display: block }
+
+        .search .results {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 0;
+            margin: 0;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #cbcfe2 #c8cee7 #c4c7d7;
+            border-radius: 3px;
+            background-color: white;
+            -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            -ms-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            -o-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .search .results li { display: block }
+
+        .search .results li:first-child { margin-top: -1px }
+
+        .search .results li:first-child:before, .search .results li:first-child:after {
+            display: block;
+            content: '';
+            width: 0;
+            height: 0;
+            position: absolute;
+            left: 50%;
+            margin-left: -5px;
+            border: 5px outset transparent;
+        }
+
+        .search .results li:first-child:before {
+            border-bottom: 5px solid #c4c7d7;
+            top: -11px;
+        }
+
+        .search .results li:first-child:after {
+            border-bottom: 5px solid #fdfdfd;
+            top: -10px;
+        }
+
+        .search .results li:first-child:hover:before, .search .results li:first-child:hover:after { display: none }
+
+        .search .results li:last-child { margin-bottom: -1px }
+
+        .search .results a {
+            display: block;
+            position: relative;
+            margin: 0 -1px;
+            padding: 6px 40px 6px 10px;
+            color: #808394;
+            font-weight: 500;
+            text-shadow: 0 1px #fff;
+            border: 1px solid transparent;
+            border-radius: 3px;
+        }
+
+        .search .results a span { font-weight: 200 }
+
+        .search .results a:before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            margin-top: -9px;
+        }
+
+        .search .results a:hover {
+            text-decoration: none;
+            color: #fff;
+            text-shadow: 0 -1px rgba(0, 0, 0, 0.3);
+            border-color: #2380dd #2179d5 #1a60aa;
+            background-color: #338cdf;
+            background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #59aaf4), color-stop(100%, #338cdf));
+            background-image: -webkit-linear-gradient(top, #59aaf4, #338cdf);
+            background-image: -moz-linear-gradient(top, #59aaf4, #338cdf);
+            background-image: -ms-linear-gradient(top, #59aaf4, #338cdf);
+            background-image: -o-linear-gradient(top, #59aaf4, #338cdf);
+            background-image: linear-gradient(top, #59aaf4, #338cdf);
+            -webkit-box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), 0 1px rgba(0, 0, 0, 0.08);
+            -moz-box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), 0 1px rgba(0, 0, 0, 0.08);
+            -ms-box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), 0 1px rgba(0, 0, 0, 0.08);
+            -o-box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), 0 1px rgba(0, 0, 0, 0.08);
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.2), 0 1px rgba(0, 0, 0, 0.08);
+        }
+
+        :-moz-placeholder {
+            color: #a7aabc;
+            font-weight: 200;
+        }
+
+        ::-webkit-input-placeholder {
+            color: #a7aabc;
+            font-weight: 200;
+        }
+
+        .lt-ie9 .search input { line-height: 26px }
+    </style>
+
+    <!-- Chat style -->
+    <style type="text/css">
+        .bg-white {
+            background-color: #fff;
+        }
+
+        .friend-list {
+            list-style: none;
+            margin-left: -40px;
+        }
+
+        .friend-list li {
+            border-bottom: 1px solid #eee;
+        }
+
+        .friend-list li a img {
+            float: left;
+            width: 45px;
+            height: 45px;
+            margin-right: 0px;
+        }
+
+        .friend-list li a {
+            position: relative;
+            display: block;
+            padding: 10px;
+            transition: all .2s ease;
+            -webkit-transition: all .2s ease;
+            -moz-transition: all .2s ease;
+            -ms-transition: all .2s ease;
+            -o-transition: all .2s ease;
+        }
+
+        .friend-list li.active a {
+            background-color: #f1f5fc;
+        }
+
+        .friend-list li a .friend-name,
+        .friend-list li a .friend-name:hover {
+            color: #777;
+        }
+
+        .friend-list li a .last-message {
+            width: 65%;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .friend-list li a .time {
+            position: absolute;
+            top: 10px;
+            right: 8px;
+        }
+
+        small, .small {
+            font-size: 85%;
+        }
+
+        .friend-list li a .chat-alert {
+            position: absolute;
+            right: 8px;
+            top: 27px;
+            font-size: 10px;
+            padding: 3px 5px;
+        }
+
+        .chat-message {
+            padding: 20px;
+        }
+
+        .chat {
+            list-style: none;
+            margin: 0;
+        }
+
+        .chat-message{
+            background: #f9f9f9;
+        }
+
+        .chat li img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50em;
+            -moz-border-radius: 50em;
+            -webkit-border-radius: 50em;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        .chat-body {
+            padding-bottom: 20px;
+        }
+
+        .chat li.left .chat-body {
+            margin-left: 70px;
+            background-color: #fff;
+        }
+
+        .chat li .chat-body {
+            position: relative;
+            font-size: 11px;
+            padding: 10px;
+            border: 1px solid #f1f5fc;
+            box-shadow: 0 1px 1px rgba(0,0,0,.05);
+            -moz-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+            -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+        }
+
+        .chat li .chat-body .header {
+            padding-bottom: 5px;
+            border-bottom: 1px solid #f1f5fc;
+        }
+
+        .chat li .chat-body p {
+            margin: 0;
+        }
+
+        .chat li.left .chat-body:before {
+            position: absolute;
+            top: 10px;
+            left: -8px;
+            display: inline-block;
+            background: #fff;
+            width: 16px;
+            height: 16px;
+            border-top: 1px solid #f1f5fc;
+            border-left: 1px solid #f1f5fc;
+            content: '';
+            transform: rotate(-45deg);
+            -webkit-transform: rotate(-45deg);
+            -moz-transform: rotate(-45deg);
+            -ms-transform: rotate(-45deg);
+            -o-transform: rotate(-45deg);
+        }
+
+        .chat li.right .chat-body:before {
+            position: absolute;
+            top: 10px;
+            right: -8px;
+            display: inline-block;
+            background: #fff;
+            width: 16px;
+            height: 16px;
+            border-top: 1px solid #f1f5fc;
+            border-right: 1px solid #f1f5fc;
+            content: '';
+            transform: rotate(45deg);
+            -webkit-transform: rotate(45deg);
+            -moz-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+        }
+
+        .chat li {
+            margin: 15px 0;
+        }
+
+        .chat li.right .chat-body {
+            margin-right: 70px;
+            background-color: #fff;
+        }
+
+        .chat-box {
+            background-color: white;
+            height: 65px;
+            width: 100% !important;
+            border-top: 1px solid #eee;
+        }
+
+        .primary-font {
+            color: #3c8dbc;
+        }
+
+    </style>
+
+    <!-- ng-cloak -->
+    <style type="text/css">
+        .ng-cloak { display:none; }
+    </style>
+
+</head>
+
+<body data-ng-app="pipe" data-ng-controller="navbarCtrl" data-ng-cloak>
+
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">pipe</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-left" style="margin-left: 15px;">
+                    <form class="search" style="width: 400px;">
+                        <div class="input-group" style="margin-top: 10px;">
+                            <input autocomplete="off" data-ng-model="search_string" data-ng-change="searchUsers()" class="form-control" id="search_input" type="text" placeholder="Search pipe"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-default btn-success" id="search_button" type="button">Search!</button>
+                            </span>
+                        </div>
+
+                        <ul class="results" id="search_results_view" data-ng-show="search_results_available">
+                            <li data-ng-repeat="user in search_users_result">
+                                <div class="row" style="margin: 5px;">
+                                    <div class="col-xs-3">
+                                        <img  data-ng-src="http://46.101.110.158/file/{{user.profile_picture}}" style="width: 35px; height: 35px;" class="profile-image img-circle">
+                                    </div>
+                                    <div class="col-xs-8">
+                                        {{user.username}}<br>
+                                        <button class="btn btn-xs btn-default" data-ng-show="user.is_friend" >friend of yours</button>
+                                        <button class="btn btn-xs btn-info" data-ng-show="!user.is_friend && !user.pending_aproval && !user.pending_request" data-ng-click="doFriendRequest(user.id)" >send friend request</button>
+                                        <button class="btn btn-xs btn-warning" data-ng-show="user.pending_request" data-ng-click="doRemoveFriendRequest(user.friend_req_id)" >cancel friend request</button>
+                                        <button class="btn btn-xs btn-success" data-ng-show="user.pending_aproval" data-ng-click="doProcessFriendRequest(user.friend_req_id, 'accept')" >accept friend request</button>
+                                        <button class="btn btn-xs btn-danger" data-ng-show="user.pending_aproval" data-ng-click="doProcessFriendRequest(user.friend_req_id, 'decline')" >decline friend request</button>
+                                    </div>
+                                </div>
+                                <hr style="margin: 1px;"/>
+                            </li>
+                        </ul>
+                    </form>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img  data-ng-src="http://46.101.110.158/file/{{user.profile_picture}}" style="width: 25px; height: 25px;" class="profile-image img-circle"> {{user.username}} <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <div style="text-align: center;">
+                                    <div class="btn-group">
+                                    <span class="btn btn-default btn-sm btn-file">
+                                        Browse <input type="file" file-model="profile_picture">
+                                    </span>
+                                        <a href="#" class="btn btn-default btn-sm" data-ng-click="uploadProfilePicture()">Upload</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href="#" data-ng-click="doLogout()"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" data-ng-show="friend_requests_number">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="padding-bottom: 20px;">
+                            friend requests <span class="badge">{{friend_requests_number}}</span>
+                        </a>
+                        <ul class="dropdown-menu" data-ng-show="friend_requests_number" style="max-height: 280px; overflow-y: scroll; width: 260px; !important;">
+                            <li data-ng-repeat="request in friend_requests" style="width: 225px; text-align: center;">
+                                <div class="row">
+                                    <div class="col-xs-4" style="text-align: right;">
+                                        <img data-ng-src="http://46.101.110.158/file/{{request.from_profile_picture}}" style="width: 25px; height: 25px;" class="profile-image img-circle">
+                                    </div>
+                                    <div class="col-xs-8" style="text-align: left; vertical-align: middle;">
+                                        {{request.from_username}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-6" style="text-align: right;">
+                                        <button class="btn btn-xs btn-success" data-ng-click="doProcessFriendRequest(request.request_id, 'accept')" >accept</button>
+                                    </div>
+                                    <div class="col-xs-6" style="text-align: left;">
+                                        <button class="btn btn-xs btn-danger" data-ng-click="doProcessFriendRequest(request.request_id, 'decline')" >decline</button>
+                                    </div>
+                                </div>
+                                <hr style="margin: 3px;"/>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-4" style="margin-top: 55px;">
+                <div class="row">
+                    <div class="col-xs-12" style="height: 45px; text-align: left; margin-left: 10px; color: #338cdf; margin-top: 10px;">
+                        <i class="glyphicon glyphicon-plus"></i> start new conversation
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12" style="height: calc(100% - 100px) !important; overflow-y: scroll;">
+                        <ul class="friend-list">
+
+                            <li class="active bounceInDown">
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>John Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Hello, Are you there?</div>
+                                    <small class="time text-muted">Just now</small>
+                                    <small class="chat-alert label label-danger">1</small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_3.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_6.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_5.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                            <li class="clearfix">
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>John Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Hello, Are you there?</div>
+                                    <small class="time text-muted">Just now</small>
+                                    <small class="chat-alert label label-danger">1</small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_3.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_6.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_5.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                            <li class="active bounceInDown">
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>John Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Hello, Are you there?</div>
+                                    <small class="time text-muted">Just now</small>
+                                    <small class="chat-alert label label-danger">1</small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_3.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_6.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_5.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Kate</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">Yesterday</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="clearfix">
+                                    <img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                                    <div class="friend-name">
+                                        <strong>Jane Doe</strong>
+                                    </div>
+                                    <div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                                    <small class="time text-muted">5 mins ago</small>
+                                    <small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-xs-8">
+                <div class="row">
+                    <div class="col-xs-12" style="margin-top: 55px; height: calc(100% - 120px) !important; overflow-y: scroll;">
+                        <div class="chat-message">
+                            <ul class="chat">
+                                <li class="left clearfix">
+                    	<span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                    	<span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                    	<span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                    	<span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                    	<span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                    	<span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="left clearfix">
+                        <span class="chat-img pull-left">
+                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">John Doe</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="right clearfix">
+                        <span class="chat-img pull-right">
+                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
+                    	</span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font">Sarah</strong>
+                                            <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
+                                        </div>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 chat-box">
+                        <div class="input-group" style="margin-top: 10px;">
+                            <input type="text" class="form-control" placeholder="Type your message here...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default btn-success" type="button">Send!</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            $('.dropdown-menu').click(function(e) {
+                e.stopPropagation(); //This will prevent the event from bubbling up and close the dropdown when you type/click on text boxes.
+            });
+
+            //Hide search results view when click on screen
+            $('html').click(function() {
+                $('#search_results_view').hide();
+                $('#search_input').val('');
+            });
+
+            //stop propagation of hide only if clicked inside results view or search button
+            $('#search_results_view').click(function(e){
+                e.stopPropagation();
+            });
+            $('#search_button').click(function(e){
+                e.stopPropagation();
+            });
+
+            $('#search_input').on('change keydown paste input', function(){
+                $('#search_results_view').show();
+            });
+
+        });
+    </script>
+</body>
+
+<script>
+    var app = angular.module('pipe', ['ngCookies']);
+
+    app.controller('navbarCtrl', function($scope, $cookies, $window, $interval, QueryService) {
+        $scope.user = [];
+        $scope.friends = [];
+        $scope.userId = $cookies.get('id');
+
+        $scope.search_string = "";
+        $scope.search_users_result = [];
+        $scope.search_results_available = false;
+
+        $scope.friend_requests_number = 0;
+        $scope.friend_requests = [];
+
+
+        QueryService.GetUser($scope.userId)
+                .success(function(data){
+                    $scope.user = data['user'];
+                });
+        QueryService.GetFriends($scope.userId)
+                .success(function (data) {
+                    $scope.friends = data['friends'];
+                });
+        QueryService.GetFriendRequests($scope.userId)
+                .success(function (data){
+                    $scope.friend_requests = data['requests'];
+                    $scope.friend_requests_number = data['requests'].length;
+                });
+
+        $interval(function(){
+            QueryService.GetFriendRequests($scope.userId)
+                    .success(function (data){
+                        $scope.friend_requests = data['requests'];
+                        $scope.friend_requests_number = data['requests'].length;
+                    });
+        }, 7000);
+
+        $scope.searchUsers = function(){
+            $scope.search_results_available = false;
+            if($scope.search_string){
+                QueryService.SearchUsers($scope.search_string)
+                        .success(function (data) {
+                            $scope.search_users_result = data['users'];
+                            if($scope.search_users_result.length != 0)
+                                $scope.search_results_available = true;
+                        })
+            }
+        };
+
+        $scope.doLogout = function(){
+            $cookies.remove('id');
+            $cookies.remove('username');
+            $cookies.remove('email');
+            $cookies.remove('valid_until');
+            $cookies.remove('auth_key');
+
+            $window.location.href="http://46.101.110.158/";
+        };
+
+        $scope.doFriendRequest = function(to_id){
+            QueryService.SendFriendRequest($scope.userId, to_id)
+                    .success(function(){
+                        $scope.searchUsers();
+                    })
+        };
+
+        $scope.doRemoveFriendRequest = function(request_id){
+            QueryService.RemoveFriendRequest(request_id)
+                    .success(function () {
+                        $scope.searchUsers();
+                    })
+        };
+
+        $scope.doProcessFriendRequest = function(request_id, request_status){
+            QueryService.ProcessFriendRequest(request_id, request_status)
+                    .success(function(){
+                        $scope.searchUsers();
+                        QueryService.GetFriendRequests($scope.userId)
+                                .success(function (data){
+                                    $scope.friend_requests = data['requests'];
+                                    $scope.friend_requests_number = data['requests'].length;
+                                });
+                    })
+        };
+
+        $scope.uploadProfilePicture = function(){
+            var file = $scope.profile_picture;
+            QueryService.UploadFileToUrl(file, "http://46.101.110.158/upload/profile_picture")
+                    .success(function (data) {
+                        if(data['status'] == 'success') {
+                            $scope.user.profile_picture = data['file_name'];
+                        }
+                    });
+        };
+
+
+    });
+
+    app.factory("QueryService", function($http) {
+        return {
+            GetUser: function(userId) {
+                return $http.get("http://46.101.110.158/user/" + userId, {})
+            },
+            GetFriends: function(userId) {
+                return $http.get("http://46.101.110.158/friends_of/" + userId, {})
+            },
+            UploadFileToUrl: function(file, uploadUrl){
+                var fd = new FormData();
+                fd.append('user_profile', file);
+
+                return $http.post(uploadUrl, fd, {transformRequest: angular.identity, headers: {'Content-Type': undefined} });
+            },
+            SearchUsers: function(search_string){
+                return $http.get("http://46.101.110.158/find_user/" + search_string, {})
+            },
+            SendFriendRequest: function(from_id, to_id){
+                return $http.post("http://46.101.110.158/friend_request", {from_id: from_id, to_id: to_id});
+            },
+            GetFriendRequests: function(userId){
+                return $http.get("http://46.101.110.158/friend_request/" + userId, {});
+            },
+            RemoveFriendRequest: function(friend_request_id){
+                return $http.delete("http://46.101.110.158/friend_request/" + friend_request_id, {});
+            },
+            ProcessFriendRequest: function(req_id, req_status){
+                return $http.post("http://46.101.110.158/handle_friend_request/" + req_id, {request_response: req_status});
+            }
+        };
+    });
+    app.directive('fileModel', ['$parse', function ($parse) {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                var model = $parse(attrs.fileModel);
+                var modelSetter = model.assign;
+
+                element.bind('change', function(){
+                    scope.$apply(function(){
+                        modelSetter(scope, element[0].files[0]);
+                    });
+                });
+            }
+        };
+    }]);
+</script>
+</html>
+{%endverbatim%}
