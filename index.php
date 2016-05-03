@@ -6,21 +6,21 @@ use Symfony\Component\HttpFoundation\Request;
 $app = new Silex\Application();
 
 $app['debug'] = true;
-$app['static_salt'] = "SEFw-EMhnsVyj-ttNR-VsYV-2JME-4HUS-Y6Hr-mV5NJyzfygax-hevW";
+$app['static_salt'] = "";
 
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => __DIR__.'/../templates',
+	'twig.path' => __DIR__.'/../templates',
 ));
 
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => array(
-        'driver'   => 'pdo_mysql',
-        'host' => 'localhost',
-	'dbname' => 'ip_project',
-	'username' => 'root',
-	'password' => '18ab28cd78dz',
-	'charset' => 'latin1'
-    ),
+	'db.options' => array(
+		'driver'   => 'pdo_mysql',
+		'host' => 'localhost',
+		'dbname' => 'ip_project',
+		'username' => 'root',
+		'password' => '',
+		'charset' => 'latin1'
+	),
 ));
 
 $getHashedPassword = function($password) use ($app) {
@@ -78,7 +78,7 @@ $checkIfAuthenticated = function (Request $request, Application $app) use ($getA
 	$valid_until = $request->headers->get('X-Valid-Until');
 	$auth_key = $request->headers->get('X-Auth-Key');
 
-	if(date() > $valid_until)
+	if(gmdate('Y-m-d H:i:s') > $valid_until)
 		return $app->json(array('status'=>'failed', 'error'=>'auth key expired'));
 
 	$computed_key = $getAuthKey($id, $username, $valid_until);
@@ -151,14 +151,14 @@ $app->get('/', function () use($app) {
 $app->get('/check_auth', function() use($app) {
 	return $app->json(array('success'=>'user is authenticated'));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->get('/pipe', function() use($app) {
 	return $app['twig']->render('pipe.html', array());
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 /**
  * RESTful API section
@@ -170,7 +170,7 @@ $app->post('/authenticate', function(Request $request) use ($app, $getHashedPass
 	$password = $request->get('password');
 
 	$password_h = $getHashedPassword($password);
-	
+
 	$user = $app['db']->fetchAssoc(
 		'SELECT * '.
 		'FROM core_user '.
@@ -180,10 +180,10 @@ $app->post('/authenticate', function(Request $request) use ($app, $getHashedPass
 		)
 	);
 	$response = array();
-	
+
 	if ($user && $user['password'] === $password_h)
 	{
-		$valid_until = date("Y-m-d H:i:s", strtotime("+1 week"));
+		$valid_until = gmdate("Y-m-d H:i:s", strtotime("+1 week"));
 		$response['status'] = "success";
 		$response['authenticate_data'] = array(
 			'id'=>$user['id'],
@@ -204,7 +204,7 @@ $app->post('/register', function (Request $request) use($app, $getHashedPassword
 	$email = $request->get('email');
 	$password = $request->get('password');
 
-	$date_added = date('Y-m-d H:i:s');
+	$date_added = gmdate('Y-m-d H:i:s');
 	$password_h = $getHashedPassword($password);
 
 	$insert_status = $app['db']->executeUpdate(
@@ -224,11 +224,11 @@ $app->post('/register', function (Request $request) use($app, $getHashedPassword
 	else
 		return $app->json(array('status'=>'failed', 'error'=>'database transaction failed with status '.$insert_status));
 })
-->before($checkIfUsernameValid)
-->before($checkIfEmailValid)
-->before($checkIfPasswordValid)
-->before($checkUsernameAvailability)
-->before($checkEmailAddressAvailability);
+	->before($checkIfUsernameValid)
+	->before($checkIfEmailValid)
+	->before($checkIfPasswordValid)
+	->before($checkUsernameAvailability)
+	->before($checkEmailAddressAvailability);
 
 $app->get('/user/{uid}', function($uid) use ($app) {
 	$user = $app['db']->fetchAssoc(
@@ -240,9 +240,9 @@ $app->get('/user/{uid}', function($uid) use ($app) {
 	);
 	return $app->json(array('user'=>$user));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated)
-->before($checkIfUserExists);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated)
+	->before($checkIfUserExists);
 
 $app->get('/find_user/{search_string}', function(Request $request, $search_string) use ($app) {
 	$uid = $request->headers->get('X-Id');
@@ -293,8 +293,8 @@ $app->get('/find_user/{search_string}', function(Request $request, $search_strin
 
 	return $response;
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->post('/friend_request', function(Request $request) use ($app) {
 	$from_user = $request->get('from_id');
@@ -314,8 +314,8 @@ $app->post('/friend_request', function(Request $request) use ($app) {
 	else
 		return $app->json(array('status'=>'failed', 'error'=>'database transaction failed with status '.$insert_status));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->get('/friend_request/{uid}', function($uid) use ($app) {
 	$requests = $app['db']->fetchAll(
@@ -331,9 +331,9 @@ $app->get('/friend_request/{uid}', function($uid) use ($app) {
 	);
 	return $app->json(array('status'=>'success', 'requests'=>$requests));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated)
-->before($checkIfUserExists);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated)
+	->before($checkIfUserExists);
 
 /**
  * TODO: Must refactor this with PUT /friend_request/{frid}
@@ -376,8 +376,8 @@ $app->post('/handle_friend_request/{frid}', function(Request $request, $frid) us
 		return $app->json(array('status'=>'success'));
 
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->delete('/friend_request/{frid}', function($frid) use ($app){
 	$rc = $app['db']->executeUpdate(
@@ -392,8 +392,8 @@ $app->delete('/friend_request/{frid}', function($frid) use ($app){
 	else
 		return $app->json(array('status'=>'success'));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->get('/friends_of/{uid}', function($uid) use ($app) {
 	$friends = $app['db']->fetchAll(
@@ -409,9 +409,9 @@ $app->get('/friends_of/{uid}', function($uid) use ($app) {
 
 	return $app->json(array('status'=>'success', 'friends'=>$friends));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated)
-->before($checkIfUserExists);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated)
+	->before($checkIfUserExists);
 
 $app->post('/upload/profile_picture', function(Request $request) use ($app, $getFileName) {
 	$file = $request->files->get('user_profile');
@@ -421,7 +421,7 @@ $app->post('/upload/profile_picture', function(Request $request) use ($app, $get
 		$path = __DIR__.'/../uploads';
 
 		$uid = $request->headers->get('X-Id');
-		$filename = $getFileName(date(), $uid, 0, rand(0, $uid), $file_ext);
+		$filename = $getFileName(gmdate('Y-m-d H:i:s'), $uid, 0, rand(0, $uid), $file_ext);
 
 		$file->move($path, $filename);
 		$app['db']->executeUpdate(
@@ -439,8 +439,8 @@ $app->post('/upload/profile_picture', function(Request $request) use ($app, $get
 		return $app->json(array('status'=>'failed', 'error'=>'not an image'));
 
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
 $app->get('/file/{filename}', function($filename) use ($app) {
 	$file = __DIR__.'/../uploads/'.$filename;
@@ -449,9 +449,118 @@ $app->get('/file/{filename}', function($filename) use ($app) {
 	else
 		return $app->json(array('status'=>'failed', 'error'=>'file requested does not exist'));
 })
-->before($alterRequestHeaders)
-->before($checkIfAuthenticated);
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 
+$app->post('/group/new', function(Request $request) use ($app) {
+	$initiator_id = $request->get('initiator_id');
+	$other_users = $request->get('member_ids');
+	$message = $request->get('message');
+	$group_name = $request->get('group_name');
+
+	if(!$message)
+		return $app->json(array('status'=>'failed', 'error'=>'no message provided'));
+	if(!$other_users)
+		return $app->json(array('status'=>'failed', 'error'=>'no group participants provided'));
+
+	$current_time = gmdate('Y-m-d H:i:s');
+	$all_members = $other_users.','.$initiator_id;
+	$all_members_arr = explode(",", $all_members);
+
+	if (!$group_name) {
+		if(count($all_members_arr) > 2)
+			$group_name = "group-".substr(str_shuffle(str_repeat("01234567890123456789012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 5)), 0, 5);
+		else
+			$group_name = $app['db']->fetchAssoc(
+				'SELECT username '.
+				'FROM core_user '.
+				'WHERE id = ?',
+				array(
+					$all_members_arr[0]
+				)
+			)['username'];
+	}
+	if(count($all_members_arr) > 2)
+		$group_avatar = "group-avatar-".rand(0,17).".jpg";
+	else
+		$group_avatar = $app['db']->fetchAssoc(
+			'SELECT profile_picture '.
+			'FROM core_user '.
+			'WHERE id = ?',
+			array(
+				$all_members_arr[0]
+			)
+		)['profile_picture'];
+
+
+	$app['db']->beginTransaction();
+
+	$app['db']->executeUpdate(
+		'INSERT '.
+		'INTO core_group (date_created, name, avatar) '.
+		'VALUES (?, ?, ?)',
+		array(
+			$current_time,
+			$group_name,
+			$group_avatar
+		)
+
+	);
+
+	$group_id = $app['db']->lastInsertId();
+
+	foreach($all_members_arr as $member_id){
+		$app['db']->executeUpdate(
+			'INSERT '.
+			'INTO core_group_x_user (group_id, user_id) '.
+			'VALUES (?, ?)',
+			array(
+				$group_id,
+				$member_id
+			)
+
+		);
+	}
+
+	$app['db']->executeUpdate(
+		'INSERT '.
+		'INTO core_message (source_id, group_id, message, date_added) '.
+		'VALUES (?, ?, ?, ?)',
+		array(
+			$initiator_id,
+			$group_id,
+			$message,
+			$current_time
+		)
+
+	);
+
+	$app['db']->commit();
+	return $app->json(array('status'=>'success'));
+
+})
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
+
+$app->get('/group/list/{uid}', function($uid) use ($app) {
+	$group_list = $app['db']->fetchAll(
+		'SELECT GXU.group_id, GXU.last_msg_read_id, G.date_created as group_date_created, G.name as group_name, G.avatar, M.message, M.source_id as msg_source_uid, M.id as msg_id, M.date_added as last_msg_time '.
+		'FROM core_group_x_user GXU '.
+		'JOIN core_group G ON G.id = GXU.group_id '.
+		'JOIN core_message M ON M.group_id = GXU.group_id AND M.date_added = ( '.
+		'	SELECT MAX(date_added) '.
+    	'	FROM core_message '.
+    	'	WHERE group_id = GXU.group_id '.
+		') '.
+		'WHERE GXU.user_id = ? '.
+		'ORDER BY M.date_added DESC;',
+		array(
+			$uid
+		)
+	);
+
+	return $app->json(array('status'=>'success', 'group_list'=>$group_list));
+})
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
 $app->run();
-
-
