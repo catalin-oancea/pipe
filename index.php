@@ -203,20 +203,30 @@ $app->post('/register', function (Request $request) use($app, $getHashedPassword
 	$username = $request->get('username');
 	$email = $request->get('email');
 	$password = $request->get('password');
+	$first_name = $request->get('first_name');
+	$last_name = $request->get('last_name');
+	$gender = $request->get('gender');
+
+	if(!$first_name) return $app->json(array('status'=>'failed', 'error'=>'first name not provided'));
+	if(!$last_name) return $app->json(array('status'=>'failed', 'error'=>'last name not provided'));
+	if(!$gender || ($gender != 'M' && $gender != 'F' && $gender != 'N/A')) return $app->json(array('status'=>'failed', 'error'=>'gender not provided'));
 
 	$date_added = gmdate('Y-m-d H:i:s');
 	$password_h = $getHashedPassword($password);
 
 	$insert_status = $app['db']->executeUpdate(
 		'INSERT '.
-		'INTO core_user (username, email, password, date_added, profile_picture) '.
-		'VALUES (?, ?, ?, ?, ?)',
+		'INTO core_user (username, email, password, date_added, profile_picture, first_name, last_name, gender) '.
+		'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
 		array(
 			$username,
 			$email,
 			$password_h,
 			$date_added,
-			'default-profile-picture.jpg'
+			'default-profile-picture.jpg',
+			$first_name,
+			$last_name,
+			$gender
 		)
 	);
 	if($insert_status == 1)
@@ -230,6 +240,8 @@ $app->post('/register', function (Request $request) use($app, $getHashedPassword
 	->before($checkUsernameAvailability)
 	->before($checkEmailAddressAvailability);
 
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
 $app->get('/user/{uid}', function($uid) use ($app) {
 	$user = $app['db']->fetchAssoc(
 		'SELECT id, username, email, date_added, profile_picture '.
@@ -244,6 +256,7 @@ $app->get('/user/{uid}', function($uid) use ($app) {
 	->before($checkIfAuthenticated)
 	->before($checkIfUserExists);
 
+//TODO: Return status=failed if db transaction fails
 $app->get('/find_user/{search_string}', function(Request $request, $search_string) use ($app) {
 	$uid = $request->headers->get('X-Id');
 
@@ -317,6 +330,8 @@ $app->post('/friend_request', function(Request $request) use ($app) {
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
 $app->get('/friend_request/{uid}', function($uid) use ($app) {
 	$requests = $app['db']->fetchAll(
 		'SELECT a.id AS request_id, a.from_user AS from_user, '.
@@ -335,9 +350,9 @@ $app->get('/friend_request/{uid}', function($uid) use ($app) {
 	->before($checkIfAuthenticated)
 	->before($checkIfUserExists);
 
-/**
- * TODO: Must refactor this with PUT /friend_request/{frid}
- */
+
+//TODO: Must refactor this with PUT /friend_request/{frid}
+//TODO: Check if user is authorized
 $app->post('/handle_friend_request/{frid}', function(Request $request, $frid) use ($app) {
 	$request_response = $request->get('request_response');
 
@@ -379,6 +394,8 @@ $app->post('/handle_friend_request/{frid}', function(Request $request, $frid) us
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
 $app->delete('/friend_request/{frid}', function($frid) use ($app){
 	$rc = $app['db']->executeUpdate(
 		'DELETE '.
@@ -395,6 +412,8 @@ $app->delete('/friend_request/{frid}', function($frid) use ($app){
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
 $app->get('/friends_of/{uid}', function($uid) use ($app) {
 	$friends = $app['db']->fetchAll(
 		'SELECT cu.id AS id, cu.username AS username, cu.email AS email, cu.date_added as date_added, cu.profile_picture as profile_picture '.
@@ -413,6 +432,7 @@ $app->get('/friends_of/{uid}', function($uid) use ($app) {
 	->before($checkIfAuthenticated)
 	->before($checkIfUserExists);
 
+//TODO: Return status=failed if db transaction fails
 $app->post('/upload/profile_picture', function(Request $request) use ($app, $getFileName) {
 	$file = $request->files->get('user_profile');
 	if(getimagesize($file)){
@@ -442,6 +462,7 @@ $app->post('/upload/profile_picture', function(Request $request) use ($app, $get
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Check if user is authorized
 $app->get('/file/{filename}', function($filename) use ($app) {
 	$file = __DIR__.'/../uploads/'.$filename;
 	if(file_exists($file))
@@ -452,6 +473,7 @@ $app->get('/file/{filename}', function($filename) use ($app) {
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Return status=failed if db transaction fails
 $app->post('/group/new', function(Request $request) use ($app) {
 	$initiator_id = $request->get('initiator_id');
 	$other_users = $request->get('member_ids');
@@ -471,26 +493,12 @@ $app->post('/group/new', function(Request $request) use ($app) {
 		if(count($all_members_arr) > 2)
 			$group_name = "group-".substr(str_shuffle(str_repeat("01234567890123456789012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 5)), 0, 5);
 		else
-			$group_name = $app['db']->fetchAssoc(
-				'SELECT username '.
-				'FROM core_user '.
-				'WHERE id = ?',
-				array(
-					$all_members_arr[0]
-				)
-			)['username'];
+			$group_name = "";
 	}
 	if(count($all_members_arr) > 2)
 		$group_avatar = "group-avatar-".rand(0,17).".jpg";
 	else
-		$group_avatar = $app['db']->fetchAssoc(
-			'SELECT profile_picture '.
-			'FROM core_user '.
-			'WHERE id = ?',
-			array(
-				$all_members_arr[0]
-			)
-		)['profile_picture'];
+		$group_avatar = "";
 
 
 	$app['db']->beginTransaction();
@@ -542,9 +550,19 @@ $app->post('/group/new', function(Request $request) use ($app) {
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
 
+//TODO: Return status=failed if db transaction fails
 $app->get('/group/list/{uid}', function($uid) use ($app) {
 	$group_list = $app['db']->fetchAll(
-		'SELECT GXU.group_id, GXU.last_msg_read_id, G.date_created as group_date_created, G.name as group_name, G.avatar, M.message, M.source_id as msg_source_uid, M.id as msg_id, M.date_added as last_msg_time '.
+		'SELECT GXU.group_id, GXU.last_msg_read_id, G.date_created as group_date_created, '.
+		'(CASE G.name '.
+    	'	WHEN "" THEN (SELECT CONCAT(first_name, \' \', last_name) FROM core_user WHERE id = (SELECT user_id FROM core_group_x_user WHERE user_id <> GXU.user_id AND group_id = GXU.group_id)) '.
+    	'	ELSE (SELECT G.name) '.
+		'END) group_name, '.
+		'(CASE G.avatar '.
+    	'	WHEN "" THEN (SELECT profile_picture FROM core_user WHERE id = (SELECT user_id FROM core_group_x_user WHERE user_id <> GXU.user_id AND group_id = GXU.group_id)) '.
+    	'	ELSE (SELECT G.avatar)'.
+		'END) avatar, '.
+		'M.message, M.source_id as msg_source_uid, M.id as msg_id, M.date_added as last_msg_time '.
 		'FROM core_group_x_user GXU '.
 		'JOIN core_group G ON G.id = GXU.group_id '.
 		'JOIN core_message M ON M.group_id = GXU.group_id AND M.date_added = ( '.
@@ -553,6 +571,7 @@ $app->get('/group/list/{uid}', function($uid) use ($app) {
     	'	WHERE group_id = GXU.group_id '.
 		') '.
 		'WHERE GXU.user_id = ? '.
+		'GROUP BY GXU.group_id '.
 		'ORDER BY M.date_added DESC;',
 		array(
 			$uid
@@ -563,4 +582,82 @@ $app->get('/group/list/{uid}', function($uid) use ($app) {
 })
 	->before($alterRequestHeaders)
 	->before($checkIfAuthenticated);
+
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
+$app->get('/message/list/{gid}', function($gid) use ($app) {
+	$message_list = $app['db']->fetchAll(
+		'SELECT * '.
+		'FROM ( '.
+		'	SELECT M.id as message_id, M.message, M.date_added, U.id as user_id, U.username as source_name, U.profile_picture as source_profile_picture '.
+		'	FROM core_message M '.
+		'	JOIN core_user U ON U.id = M.source_id '.
+		'	WHERE M.group_id = ? '.
+		'	ORDER BY M.date_added DESC '.
+		'	LIMIT 70 '.
+		') A ORDER BY A.date_added ASC',
+		array(
+			$gid
+		)
+	);
+
+	return $app->json(array('status'=>'success', 'group_id'=> $gid ,'message_list'=>$message_list));
+})
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
+
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
+$app->post('/message', function(Request $request) use ($app) {
+	$source_id = $request->get('user_id');
+	$group_id = $request->get('group_id');
+	$message = $request->get('message');
+
+	if(!$message)
+		return $app->json(array('status'=>'failed', 'error'=>'no message provided'));
+
+	$curr_date = gmdate('Y-m-d H:i:s');
+
+	$app['db']->executeUpdate(
+		'INSERT '.
+		'INTO core_message (source_id, group_id, message, date_added) '.
+		'VALUES (?, ?, ?, ?)',
+		array(
+			$source_id,
+			$group_id,
+			$message,
+			$curr_date
+		)
+	);
+
+	return $app->json(array('status'=>'success'));
+})
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
+
+//TODO: Check if user is authorized
+//TODO: Return status=failed if db transaction fails
+$app->post('/message/mark_read', function(Request $request) use ($app) {
+	$user_id = $request->get('user_id');
+	$message_id = $request->get('message_id');
+	$group_id = $request->get('group_id');
+
+	$app['db']->executeUpdate(
+		'UPDATE core_group_x_user '.
+		'SET last_msg_read_id = ? '.
+		'WHERE group_id = ? AND user_id = ?',
+		array(
+			$message_id,
+			$group_id,
+			$user_id
+		)
+	);
+
+	return $app->json(array('status'=>'success'));
+})
+	->before($alterRequestHeaders)
+	->before($checkIfAuthenticated);
+
+
 $app->run();
+
