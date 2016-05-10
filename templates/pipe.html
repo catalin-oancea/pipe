@@ -1,6 +1,7 @@
 {%verbatim%}
 <html>
 <head>
+    <link rel="icon" href="../logo.png">
     <title>pipe</title>
 
     <!-- jQuery (needed for bootstrap) 1.min.js-->
@@ -15,6 +16,9 @@
     <script src="https://code.angularjs.org/1.5.2/angular-cookies.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-moment/0.9.0/angular-moment.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angularjs-scroll-glue/2.0.4/scrollglue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-audio/1.7.2/angular.audio.min.js"></script>
 
     <!-- FontAwesome 2.min.css-->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
@@ -348,10 +352,12 @@
 
 <body data-ng-app="pipe" data-ng-controller="navbarCtrl" data-ng-cloak>
 
-    <div class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar navbar-default navbar-fixed-top visible-md visible-lg">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">pipe</a>
+                <a class="navbar-brand" href="#">
+                    <img src="../logo.png" style="width: 25px; height: 25px;">
+                </a> <a class="navbar-brand" href="#" style="padding-left: 10px;">pipe</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-left" style="margin-left: 15px;">
@@ -435,7 +441,7 @@
         </div>
     </div>
     <div class="container">
-        <div class="row">
+        <div class="row visible-md visible-lg">
             <div class="col-xs-4" style="margin-top: 55px;">
                 <div class="row">
                     <div class="col-xs-12" style="height: 45px; text-align: left; margin-left: 10px; color: #338cdf; padding-top: 10px;">
@@ -447,18 +453,31 @@
                 <div class="row">
                     <div class="col-xs-12" style="height: calc(100% - 100px) !important; overflow-y: scroll;">
                         <ul class="friend-list">
+                            <div data-ng-show="group_list.length == 0" style="padding-top: 20px;">
+                                <div class="row">
+                                    <div class="col-xs-12" style="text-align: center;">
+                                        <img src="../friends_group.png">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12" style="text-align: center;">
+                                        <h4>Start talking to your friends!</h4>
+                                        <h5>Create new conversation by clicking the 'Start new conversation' button.</h5>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- <li class="active bounceInDown"> -->
-                            <li data-ng-repeat="group_l in group_list">
-                                <a href="#" class="clearfix">
+                            <li data-ng-class="{active: getMyCtrlScope().highlighted_group_id == group_l.group_id}" data-ng-class="{bounceInDown: getMyCtrlScope().highlighted_group_id == group_l.group_id}" data-ng-repeat="group_l in group_list">
+                                <a style="text-decoration: none;" href="" data-ng-click="ChangeGroupView(getMyCtrlScope().highlighted_group_id, group_l.group_id);" class="clearfix">
                                     <img data-ng-src="http://46.101.110.158/file/{{group_l.avatar}}" alt="" class="img-circle">
                                     <div class="friend-name">
                                         <strong style="padding-left: 5px;">{{group_l.group_name}}</strong>
                                     </div>
                                     <div class="last-message text-muted" style="padding-left: 5px;">{{group_l.message}}</div>
                                     <small class="time text-muted"><time am-time-ago="ConvertToLocalTime(group_l.last_msg_time)"></time> </small>
-                                    <small data-ng-show="group_l.msg_source_uid == userId" class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
-                                    <small data-ng-show="group_l.msg_source_uid != userId && group_l.msg_id == group_l.last_msg_id" class="chat-alert text-muted"><i class="fa fa-check"></i></small>
-                                    <small data-ng-show="group_l.msg_source_uid != userId && group_l.msg_id != group_l.last_msg_id" class="chat-alert label label-danger">1</small>
+                                    <small data-ng-show="getMyCtrlScope().highlighted_group_id != group_l.group_id && group_l.msg_source_uid == userId" class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                                    <small data-ng-show="getMyCtrlScope().highlighted_group_id != group_l.group_id && group_l.msg_source_uid != userId && group_l.msg_id == group_l.last_msg_read_id" class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                                    <small data-ng-show="getMyCtrlScope().highlighted_group_id != group_l.group_id && group_l.msg_source_uid != userId && group_l.msg_id != group_l.last_msg_read_id" class="chat-alert label label-danger">1</small>
                                 </a>
                             </li>
                         </ul>
@@ -467,317 +486,59 @@
 
             </div>
             <div class="col-xs-8">
-                <div data-ng-show="!interface_CreateNewGroup">
+                <div data-ng-show="!interface_CreateNewGroup && highlighted_group_id == -1">
                     <div class="row">
-                        <div class="col-xs-12" style="margin-top: 55px; height: calc(100% - 120px) !important; overflow-y: scroll;">
-                            <div class="chat-message">
+                        <div class="col-xs-12" style="margin-top: 55px; height: calc(100% - 55px) !important; padding-top: 20px;">
+                            <div class="row">
+                                <div class="col-xs-12" style="text-align: center;">
+                                    <img src="../friends_chat.png">
+                                </div>
+                            </div>
+                            <div class="row" style="text-align: center;">
+                                <div class="col-xs-12">
+                                    <h4>Discover people and start new conversations!</h4>
+                                    <h5>Use the search bar to find your friends.</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-ng-show="!interface_CreateNewGroup && highlighted_group_id != -1">
+                    <div class="row">
+                        <div scroll-glue class="col-xs-12" style="margin-top: 55px; height: calc(100% - 120px) !important; overflow-y: scroll !important;">
+                            <div class="chat-message" style="min-height: 100%;">
                                 <ul class="chat">
-                                    <li class="left clearfix">
-                    	<span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
+                                    <!-- left || right class newar clearfix -->
+                                    <li class="right clearfix" data-ng-repeat="msg_x in message_list[highlighted_group_id]" data-ng-cloak="">
+                                        <!-- pull-right || pull-left -->
+                                        <span class="chat-img pull-right">
+                                            <img data-ng-src="http://46.101.110.158/file/{{msg_x.source_profile_picture}}" alt="">
+                                        </span>
                                         <div class="chat-body clearfix">
                                             <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
+                                                <strong class="primary-font">{{msg_x.source_name}}</strong>
+                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> <time am-time-ago="ConvertToLocalTime(msg_x.date_added)"></time></small>
                                             </div>
                                             <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                                {{msg_x.message}}
                                             </p>
                                         </div>
                                     </li>
-                                    <li class="right clearfix">
-                    	<span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                    	<span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                    	<span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                    	<span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                    	<span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="left clearfix">
-                        <span class="chat-img pull-left">
-                    		<img src="http://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">John Doe</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li class="right clearfix">
-                        <span class="chat-img pull-right">
-                    		<img src="http://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                    	</span>
-                                        <div class="chat-body clearfix">
-                                            <div class="header">
-                                                <strong class="primary-font">Sarah</strong>
-                                                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                                            </div>
-                                            <p>
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at.
-                                            </p>
-                                        </div>
-                                    </li>
+
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 chat-box">
-                            <div class="input-group" style="margin-top: 10px;">
-                                <input type="text" class="form-control" placeholder="Type your message here...">
-                            <span class="input-group-btn">
-                                <button class="btn btn-default btn-success" type="button">Send!</button>
-                            </span>
-                            </div>
+                            <form ng-submit="SendMessage(message_drafts[highlighted_group_id])">
+                                <div class="input-group" style="margin-top: 10px;">
+                                    <input type="text" class="form-control" placeholder="Type your message here..." data-ng-model="message_drafts[highlighted_group_id]">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default btn-success" type="submit">Send!</button>
+                                    </span>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -785,7 +546,7 @@
                 <div data-ng-show="interface_CreateNewGroup">
                     <div class="row">
                         <div class="col-xs-12" style="margin-top: 55px; height: calc(100% - 55px) !important; background-image: url('../new_group_bg.png'); padding-top: 20px;">
-                            <div class="row">
+                            <div class="row" style="height: 100%;">
                                 <div class="col-xs-2"></div>
                                 <div class="col-xs-8">
                                     <div class="row">
@@ -825,9 +586,21 @@
                 </div>
 
             </div>
-
         </div>
 
+        <div class="row hidden-md hidden-lg">
+            <div class="row">
+                <div class="col-xs-12" style="text-align: center;">
+                    <img src='../screen.png'/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12" style="text-align: center;">
+                    <h4>pipe is only available on bigger screens (for now).</h4>
+                    <h5>You can try it on your laptop!</h5>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -859,19 +632,82 @@
             });
 
             $(".resetSelect2").on('click', function(){
-                console.log("fsfsdf");
                 $('.group_members_selector').select2('val', null)
             });
-
         });
     </script>
 </body>
 
 <script>
-    var app = angular.module('pipe', ['ngCookies', 'angularMoment']);
+    var app = angular.module('pipe', ['ngCookies', 'angularMoment', 'luegg.directives', 'ngAudio']);
 
-    app.controller('navbarCtrl', function($scope, $cookies, $window, $interval, QueryService) {
+    app.controller('navbarCtrl', function($scope, $cookies, $window, $interval, QueryService, ngAudio) {
+        /**
+         * Window notification system
+         */
+        $scope.soundNotif = ngAudio.load("../notification.mp3");
+        $scope.isPlaying = false;
+        $scope.currentWindow = true;
+        $scope.hasNotifications = false;
+        $scope.notificationTitle = "";
+        angular.element($window).bind('focus', function() {
+            $scope.currentWindow = true;
+            $scope.hasNotifications = false;
+            $scope.notificationTitle = "pipe";
+        }).bind('blur', function() {
+            $scope.currentWindow = false;
+        });
+        $scope.playNotificationSound = function() {
+            if($scope.isPlaying === false && $scope.currentWindow === false) {
+                $scope.isPlaying = true;
+                $scope.hasNotifications = true;
+                $scope.notificationTitle = "pipe - New Message";
+
+                $scope.soundNotif.play();
+
+                $scope.isPlaying = false;
+            }
+        };
+
+
+        $scope.getMyCtrlScope = function() {
+            return $scope;
+        };
         $scope.userId = $cookies.get('id');
+        $scope.user = [];
+        $scope.friends = [];
+
+        $scope.search_string = "";
+        $scope.search_users_result = [];
+        $scope.search_results_available = false;
+
+        $scope.friend_requests_number = 0;
+        $scope.friend_requests = [];
+
+
+        QueryService.GetUser($scope.userId)
+                .success(function(data){
+                    $scope.user = data['user'];
+                });
+
+        QueryService.GetFriends($scope.userId)
+                .success(function (data) {
+                    $scope.friends = data['friends'];
+                });
+
+        QueryService.GetFriendRequests($scope.userId)
+                .success(function (data){
+                    $scope.friend_requests = data['requests'];
+                    $scope.friend_requests_number = data['requests'].length;
+                });
+
+        $interval(function(){
+            QueryService.GetFriendRequests($scope.userId)
+                    .success(function (data){
+                        $scope.friend_requests = data['requests'];
+                        $scope.friend_requests_number = data['requests'].length;
+                    });
+        }, 7000);
 
         /**
          * New Group Methods
@@ -910,59 +746,70 @@
         /**
          *  Group List Methods
          */
+        $scope.highlighted_group_id = -1;
         $scope.group_list = [];
 
+        QueryService.GetGroupList($scope.userId)
+                .success(function (data){
+                    if(data['group_list'] != $scope.group_list) {
+                        $scope.group_list = data['group_list'];
+                        if($scope.group_list.length > 0)
+                            $scope.highlighted_group_id = $scope.group_list[0]['group_id'];
+                    }
+                });
         $interval(function(){
             QueryService.GetGroupList($scope.userId)
                     .success(function (data){
-                        $scope.group_list = data['group_list'];
+                        if(! angular.equals($scope.group_list, data['group_list'])) {
+                            $scope.group_list = data['group_list'];
+                            $scope.playNotificationSound();
+                        }
                     });
         }, 500);
+
+        $scope.ChangeGroupView = function(old_group_id, new_group_id){
+            if(old_group_id != -1){
+                var last_msg_id = $scope.message_list[old_group_id][$scope.message_list[old_group_id].length - 1]['message_id'];
+                QueryService.MarkLastReadMessage($scope.userId, last_msg_id, old_group_id);
+            }
+
+            $scope.highlighted_group_id = new_group_id;
+            $scope.interface_CreateNewGroup = 0;
+        };
+
+        /**
+         *  Message Methods
+         */
+        $scope.message_list = [];
+        $scope.message_drafts = [];
+
+        $interval(function(){
+            if($scope.highlighted_group_id != -1)
+            {
+                QueryService.GetMessageList($scope.highlighted_group_id)
+                        .success(function (data){
+                            if(! angular.equals($scope.message_list[data['group_id']], data['message_list']))
+                                $scope.message_list[data['group_id']] = data['message_list'];
+                        });
+            }
+        }, 250);
+
+        $scope.SendMessage = function(message){
+            QueryService.SendMessageToGroup($scope.userId, $scope.highlighted_group_id, message);
+            $scope.message_drafts[$scope.highlighted_group_id] = "";
+        };
 
 
         /**
          * @return {string}
          */
         $scope.ConvertToLocalTime = function(time){
-            var date = new Date(time+' UTC');
-            return date.toString();
+            var dateEdit = time.replace(/-/g, "/");
+            dateEdit +=' UTC';
+            dateEdit = new Date(dateEdit).toISOString();
+
+            return dateEdit;
         };
-
-
-        $scope.user = [];
-        $scope.friends = [];
-
-        $scope.search_string = "";
-        $scope.search_users_result = [];
-        $scope.search_results_available = false;
-
-        $scope.friend_requests_number = 0;
-        $scope.friend_requests = [];
-
-
-        QueryService.GetUser($scope.userId)
-                .success(function(data){
-                    $scope.user = data['user'];
-                });
-
-        QueryService.GetFriends($scope.userId)
-                .success(function (data) {
-                    $scope.friends = data['friends'];
-                });
-
-        QueryService.GetFriendRequests($scope.userId)
-                .success(function (data){
-                    $scope.friend_requests = data['requests'];
-                    $scope.friend_requests_number = data['requests'].length;
-                });
-
-        $interval(function(){
-            QueryService.GetFriendRequests($scope.userId)
-                    .success(function (data){
-                        $scope.friend_requests = data['requests'];
-                        $scope.friend_requests_number = data['requests'].length;
-                    });
-        }, 7000);
 
         $scope.searchUsers = function(){
             $scope.search_results_available = false;
@@ -1009,6 +856,10 @@
                                     $scope.friend_requests = data['requests'];
                                     $scope.friend_requests_number = data['requests'].length;
                                 });
+                        QueryService.GetFriends($scope.userId)
+                                .success(function (data) {
+                                    $scope.friends = data['friends'];
+                                });
                     })
         };
 
@@ -1053,10 +904,19 @@
                 return $http.post("http://46.101.110.158/handle_friend_request/" + req_id, {request_response: req_status});
             },
             CreateNewGroup: function(user_id, group_name, group_members, group_init_msg){
-                return $http.post("http://46.101.110.158/group/new", {initiator_id: user_id, member_ids: group_members, message: group_init_msg, group_name: group_name})
+                return $http.post("http://46.101.110.158/group/new", {initiator_id: user_id, member_ids: group_members, message: group_init_msg, group_name: group_name});
             },
             GetGroupList: function(user_id){
                 return $http.get("http://46.101.110.158/group/list/" + user_id, {});
+            },
+            GetMessageList: function(group_id){
+                return $http.get("http://46.101.110.158/message/list/" + group_id, {});
+            },
+            MarkLastReadMessage: function(user_id, message_id, group_id){
+                return $http.post("http://46.101.110.158/message/mark_read", {user_id: user_id, message_id: message_id, group_id: group_id});
+            },
+            SendMessageToGroup: function(user_id, group_id, message){
+                return $http.post("http://46.101.110.158/message", {user_id: user_id, group_id: group_id, message: message});
             }
         };
     });
