@@ -1,6 +1,7 @@
 # pipe
 
 http://46.101.110.158
+Online chat with groups and stuff.
 
 ## Webclient screenshots
 
